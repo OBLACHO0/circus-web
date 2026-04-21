@@ -119,7 +119,7 @@ class Game {
     if (index >= FRUITS.length) return;
     const { radius } = FRUITS[index];
     const body = Matter.Bodies.circle(x, y, radius, {
-      restitution: 0.3,
+      restitution: 0.05,
       friction: 0.8,
       frictionAir: 0.01,
       label: `fruit_${index}`,
@@ -127,15 +127,19 @@ class Game {
     body.fruitIndex = index;
     body.merging    = false;
     Matter.World.add(this.world, body);
-    this.fruits.push({ body, index, radius, name: FRUITS[index].name });
+    const obj = { body, index, radius, name: FRUITS[index].name };
+    this.fruits.push(obj);
+    return obj;
   }
+  
 
   // ── Бросок ────────────────────────────────────────────
   drop() {
     if (!this.canDrop || this.gameOver || this.paused) return;
     this.canDrop = false;
-    // Спавним чуть ниже шутера
-    this.spawnFruit(this.shooterX, SHOOTER_Y + 20, this.nextIndex);
+    const fruit = this.spawnFruit(this.shooterX, SHOOTER_Y + 20, this.nextIndex);
+    // Даём фрукту начальную скорость вниз — плавное падение без толчка
+    if (fruit) Matter.Body.setVelocity(fruit.body, { x: 0, y: 8 });
     this.nextIndex      = this.afterNextIndex;
     this.afterNextIndex = Math.floor(Math.random() * 5);
     setTimeout(() => { this.canDrop = true; }, 800);
