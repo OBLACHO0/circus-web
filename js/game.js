@@ -189,8 +189,13 @@ class Game {
     this.afterNextIndex = Math.floor(Math.random() * 5);
   }
 
+  stop() {
+  this._stopped = true;
+}
+
   // ── Главный цикл ──────────────────────────────────────
   _loop(ts) {
+    if (this._stopped) return;
     if (this._lastTime === null) this._lastTime = ts;
     const dt = Math.min((ts - this._lastTime) / 1000, 0.05);
     this._lastTime = ts;
