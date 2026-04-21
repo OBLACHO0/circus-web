@@ -17,15 +17,12 @@ window.addEventListener("DOMContentLoaded", () => {
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
 
-  loadImages(() => {
-    showSplash();
-  });
+  loadImages(() => { showSplash(); });
 
   // ── Сплэш ─────────────────────────────────────────────
   function showSplash() {
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById("splash-screen").classList.add("active");
-
     setTimeout(() => {
       const logo = document.getElementById("splash-logo");
       logo.style.transition = "opacity 0.4s";
@@ -36,17 +33,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // ── Меню ──────────────────────────────────────────────
   function showMenu() {
-    // Останавливаем игру если была
     if (window.currentGame) {
       window.currentGame._stopped = true;
       window.currentGame = null;
     }
 
-    // Убираем игровой UI
     document.getElementById("menu-toggle-btn").style.display = "none";
     document.getElementById("pause-panel").classList.add("hidden");
-
-    // Показываем меню
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById("menu-screen").classList.add("active");
 
@@ -55,7 +48,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const igori = document.getElementById("char-igori");
     const btn   = document.getElementById("play-btn");
 
-    // Сброс стилей
     [title, denis, igori, btn].forEach(el => {
       el.classList.remove("show");
       el.style.opacity = "";
@@ -68,12 +60,10 @@ window.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => igori.classList.add("show"), 450);
     setTimeout(() => btn.classList.add("show"),   600);
 
-    // Боббинг
     let bobT = 0;
     const bobInterval = setInterval(() => {
       if (!document.getElementById("menu-screen").classList.contains("active")) {
-        clearInterval(bobInterval);
-        return;
+        clearInterval(bobInterval); return;
       }
       bobT += 0.05;
       denis.style.transform = `translateY(${Math.sin(bobT) * 8}px)`;
@@ -96,24 +86,21 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("game-screen").classList.add("active");
 
     resizeCanvas();
-
     const game = new Game(canvas);
     window.currentGame = game;
 
-    // ── Кнопка ☰ ──
+    // Кнопка ☰
     const toggleBtn = document.getElementById("menu-toggle-btn");
     const panel     = document.getElementById("pause-panel");
 
-    toggleBtn.style.display         = "flex";
-    toggleBtn.style.alignItems      = "center";
-    toggleBtn.style.justifyContent  = "center";
+    toggleBtn.style.display        = "flex";
+    toggleBtn.style.alignItems     = "center";
+    toggleBtn.style.justifyContent = "center";
     panel.classList.add("hidden");
     canvas.style.pointerEvents = "all";
 
-    // Новый обработчик (убираем старый клонированием)
     const newToggle = toggleBtn.cloneNode(true);
     toggleBtn.parentNode.replaceChild(newToggle, toggleBtn);
-
     newToggle.addEventListener("click", () => {
       const isOpen = !panel.classList.contains("hidden");
       if (isOpen) {
@@ -127,15 +114,13 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Кнопка «Вернуть двух долбоебов»
+    // Вернуть двух долбоебов
     const btnBack = document.getElementById("btn-back-menu");
     const newBtnBack = btnBack.cloneNode(true);
     btnBack.parentNode.replaceChild(newBtnBack, btnBack);
-    newBtnBack.addEventListener("click", () => {
-      showMenu();
-    });
+    newBtnBack.addEventListener("click", () => { showMenu(); });
 
-    // Кнопка «Убить Мат. Анализом»
+    // Убить Мат. Анализом
     const btnRestart = document.getElementById("btn-restart");
     const newBtnRestart = btnRestart.cloneNode(true);
     btnRestart.parentNode.replaceChild(newBtnRestart, btnRestart);
@@ -146,56 +131,54 @@ window.addEventListener("DOMContentLoaded", () => {
       game.restart();
     });
 
-    // Ползунки
-    document.getElementById("slider-music").oninput = (e) => {
-      game.musicVolume = e.target.value / 100;
-    };
-    document.getElementById("slider-sfx").oninput = (e) => {
-      game.sfxVolume = e.target.value / 100;
-    };
+    document.getElementById("slider-music").oninput = (e) => { game.musicVolume = e.target.value / 100; };
+    document.getElementById("slider-sfx").oninput   = (e) => { game.sfxVolume   = e.target.value / 100; };
 
-    // ── Касания ──
-    function getBaseX(clientX) {
-      return clientX / game.scaleX;
+    // ── Обработка нажатий ────────────────────────────────
+    function handleTap(clientX, clientY) {
+      if (game.paused) return;
+
+      if (game.gameOver) {
+        const hit = game.hitTestGameOver(clientX, clientY);
+        if (hit === "restart") { game.restart(); return; }
+        if (hit === "donate")  {
+          if (confirm("Продолжить игру за $2?\n(Функция оплаты в разработке)")) {
+            // Убираем game over и продолжаем
+            game.gameOver = false;
+            game.dangerTimer = 0;
+          }
+          return;
+        }
+        return;
+      }
+
+      const bx = clientX / game.scaleX;
+      game.shooterX = Math.max(50, Math.min(310, bx));
+      game.drop();
+    }
+
+    function handleMove(clientX) {
+      if (game.paused || game.gameOver) return;
+      game.shooterX = Math.max(50, Math.min(310, clientX / game.scaleX));
     }
 
     canvas.addEventListener("touchstart", (e) => {
       e.preventDefault();
-      if (game.paused) return;
-      const bx = getBaseX(e.touches[0].clientX);
-      if (game.gameOver) {
-        const by = e.touches[0].clientY / game.scaleY;
-        if (by >= 342 && by <= 388) { game.restart(); return; }
-        if (by >= 398 && by <= 444) { alert("💰 Функция оплаты пока не подключена!"); return; }
-        return;
-      }
-      game.shooterX = Math.max(50, Math.min(310, bx));
-      game.drop();
+      handleTap(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: false });
 
     canvas.addEventListener("touchmove", (e) => {
       e.preventDefault();
-      if (game.paused || game.gameOver) return;
-      const bx = getBaseX(e.touches[0].clientX);
-      game.shooterX = Math.max(50, Math.min(310, bx));
+      handleMove(e.touches[0].clientX);
     }, { passive: false });
 
     canvas.addEventListener("mousedown", (e) => {
-      if (game.paused) return;
-      const bx = getBaseX(e.clientX);
-      if (game.gameOver) {
-        const by = e.clientY / game.scaleY;
-        if (by >= 342 && by <= 388) { game.restart(); return; }
-        if (by >= 398 && by <= 444) { alert("💰 Функция оплаты пока не подключена!"); return; }
-        return;
-      }
-      game.shooterX = Math.max(50, Math.min(310, bx));
-      game.drop();
+      handleTap(e.clientX, e.clientY);
     });
 
     canvas.addEventListener("mousemove", (e) => {
-      if (game.paused || game.gameOver || e.buttons !== 1) return;
-      game.shooterX = Math.max(50, Math.min(310, getBaseX(e.clientX)));
+      if (e.buttons !== 1) return;
+      handleMove(e.clientX);
     });
   }
 
