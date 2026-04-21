@@ -163,7 +163,12 @@ window.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       if (game.paused) return;
       const bx = getBaseX(e.touches[0].clientX);
-      if (game.gameOver) { game.restart(); return; }
+      if (game.gameOver) {
+        const by = e.touches[0].clientY / game.scaleY;
+        if (by >= 342 && by <= 388) { game.restart(); return; }
+        if (by >= 398 && by <= 444) { alert("💰 Функция оплаты пока не подключена!"); return; }
+        return;
+      }
       game.shooterX = Math.max(50, Math.min(310, bx));
       game.drop();
     }, { passive: false });
@@ -178,7 +183,12 @@ window.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("mousedown", (e) => {
       if (game.paused) return;
       const bx = getBaseX(e.clientX);
-      if (game.gameOver) { game.restart(); return; }
+      if (game.gameOver) {
+        const by = e.clientY / game.scaleY;
+        if (by >= 342 && by <= 388) { game.restart(); return; }
+        if (by >= 398 && by <= 444) { alert("💰 Функция оплаты пока не подключена!"); return; }
+        return;
+      }
       game.shooterX = Math.max(50, Math.min(310, bx));
       game.drop();
     });
