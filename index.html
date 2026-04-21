@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Circus Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Экран загрузки -->
+  <div id="splash-screen" class="screen active">
+    <img id="splash-logo" src="assets/images/logo.png" alt="logo" />
+  </div>
+
+  <!-- Главное меню -->
+  <div id="menu-screen" class="screen">
+    <div id="menu-title">CIRCUS</div>
+    <div id="menu-chars">
+      <img id="char-denis" src="assets/images/denis.png" alt="denis" />
+      <img id="char-igori" src="assets/images/igori.png" alt="igori" />
+    </div>
+    <button id="play-btn">Играть</button>
+  </div>
+
+  <!-- Игровой экран -->
+  <div id="game-screen" class="screen">
+
+    <!-- Оверлей меню паузы -->
+    <button id="menu-toggle-btn">☰</button>
+
+    <div id="pause-panel" class="hidden">
+      <button id="btn-back-menu">Вернуть двух долбоебов</button>
+      <button id="btn-restart">Убить Мат. Анализом</button>
+
+      <div class="slider-row">
+        <label>Трек:</label>
+        <input type="range" id="slider-music" min="0" max="100" value="100" />
+      </div>
+      <div class="slider-row">
+        <label>Крик:</label>
+        <input type="range" id="slider-sfx" min="0" max="100" value="100" />
+      </div>
+    </div>
+
+    <!--Canvas игры -->
+    <canvas id="game-canvas"></canvas>
+
+  </div>
+
+  <!-- Matter.js физика -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <!-- Наши скрипты -->
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>
